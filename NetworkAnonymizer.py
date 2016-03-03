@@ -45,7 +45,7 @@ def kAnonymize(graph): # The DP Algorithm
         degrees[edge[1]] += 1
     sorted(degrees) # Sort degrees
 
-    costs = [ 0 for _ in range(len(graph.vertices))]
+    costs = [0] * len(graph.vertices)
     ranges = [None] * len(graph.vertices)
 
     # first 2k vertices lumped into one degree bin
@@ -165,5 +165,5 @@ file.close()
 anonymizedGraph = anonymize(network.toGraph())
 output = open("anonymizedData.txt", "w+")
 for edge in anonymizedGraph.edges: # Create newly anonymized dataset
-    output.write("" + str(edge[0]+1) + " " + str(edge[1]+1) + "\n")
+    output.write(str(edge[0]+1) + "\t" + str(edge[1]+1) + "\n")
 
