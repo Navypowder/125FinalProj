@@ -2,6 +2,7 @@
 
 from sets import Set
 import random
+import math
 import numpy
 
 K_VALUE = 5
@@ -28,8 +29,10 @@ class Network:
     def toGraph(self):
         return Graph(list(self.nodes), list(self.edges))
 
-
-
+# Takes in a pair of nodes and returns them in the order we standardize
+# for edges.
+def makeEdge(n1, n2):
+    return (min(n1, n2), max(n1, n2))
 
 def kAnonymize(graph): # The DP Algorithm
 
@@ -86,27 +89,72 @@ def kAnonymize(graph): # The DP Algorithm
         index = startIndex - 1
 
     # Sanity check
-    for degree in newDegrees:
-        if degree == -1:
-            raise Exception("Error: Not all degrees were set to a value")
+    if any([i == -1 for i in newDegrees]):
+        raise Exception("Error: Not all degrees were set to a value.")
 
     return newDegrees
 
-def findBestSwap():
-    return
+def findBestSwap(inputGraph, anonymizedGraph):
+
+    # For computational purposes we only examien some subset of the edges
+    # in the graph.
+    examineThreshold = math.log(len(graph.edges), 2)
+    numExamined = 0
+
+    c = 0
+    toAddEdges = ((-1, -1), (-1, -1))
+    toRemoveEdges = ((-1, -1), (-1, -1))
+
+    while numExamined < examineThreshold and c != 2:
+        [e1, e2] = random.sample(graph.edges, 2)
+
+        # if any of the nodes are the same, we won't consider this edge pair
+        if any([i in e2 for i in e1]):
+            continue
+
+        swapSets = [ [ e1, e2, makeEdge(e1[0], e2[0]), makeEdge(e1[1], e2[1]) ],
+                     [ e1, e2, makeEdge(e1[0], e2[1]), makeEdge(e1[1], e2[0]) ] ]
+        for swap in swapSets:
+            for edge in swap[2:]:
+                if anonymizedGraph.edges.contains(edge):
+                    continue
+
+            def swapDifference(swaps, inputGraph):
+                _c = 0
+                if inputGraph.edges.contains(swaps[0]):
+                    _c -= 1
+                if inputGraph.edges.contains(swaps[1]):
+                    _c -= 1
+                if inputGraph.edges.contains(swaps[2]):
+                    _c += 1
+                if inputGraph.edges.contains(swaps[3]):
+                    _c += 1
+                return _c
+
+            if swapDifference(swap, inputGraph) > c:
+                c = swapDifference(swap, inputGraph)
+                toAddEdges = tuple(swaps[2:])
+                toRemoveEdges = tuple(swaps[:2])
+
+        numExamined += 1
+
+    return c, toRemoveEdges, toAddEdges
 
 #outputs graph with same degree sequence as initialGraph and high similarity to inputGraph
 def greedySwap(initialGraph, inputGraph):
     resultGraph = initialGraph
-    c, toRemoveEdge, toAddEdge = findBestSwap(resultGraph)
+    c, toRemoveEdge, toAddEdge = findBestSwap(inputGraph, initialGraph)
+
     while c > 0:
-        resultGraph.edges.add(toAddEdge)
-        resultGraph.edges.remove(toRemoveEdge)
-        c, toRemoveEdge, toAddEdge = findBestSwap(resultGraph)
+        for edge in toAddEdge:
+            resultGraph.edges.add(edge)
+        for edge in toRemoveEdge:
+            resultGraph.edges.remove(edge)
+        c, toRemoveEdge, toAddEdge = findBestSwap(resultGraph, inputGraph)
+
     return resultGraph
 
 def constructGraph(degrees):
-    vertices = range(len(degrees))
     edges = []
     if(sum(degrees) % 2 == 1):
         raise RuntimeError
@@ -115,18 +163,19 @@ def constructGraph(degrees):
         for degree in degrees:
             if degree < 0:
                 raise RuntimeError
+
         index = random.randint(0, len(degrees) - 1)
+        d = degrees[index]
         degrees[index] = 0
-        sameDegreeVertices = [ i for i in range(len(degrees)) \
-                       if degrees[i] == degrees[index]]
-        for vertex in sameDegreeVertices:
-            edges.add((index, vertex))
+        degDLargest = numpy.argsort(degrees)[:d]
+        for vertex in degDLargest:
+            edges.add(min(index, vertex), max(index, vertex))
             degrees[vertex] -= 1
 
         # See if graph is completed
         graphCompleted = not any(degrees)
         if graphCompleted:
-            return Graph(vertices, edges) # Return completed graph
+            return Graph(range(len(degrees)), edges) # Return completed graph
 
 def anonymize(graph):
 
