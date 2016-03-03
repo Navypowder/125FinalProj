@@ -36,6 +36,8 @@ def makeEdge(n1, n2):
 
 def kAnonymize(graph): # The DP Algorithm
 
+    print "kAnonymize"
+
     # cost of setting degree of nodes startIndex to endIndex to d* (median val)
     def anonymizationCost(degrees, startIndex, endIndex):
         dStar = numpy.median(degrees[startIndex : endIndex + 1])
@@ -47,10 +49,12 @@ def kAnonymize(graph): # The DP Algorithm
         degrees[edge[0]] += 1
         degrees[edge[1]] += 1
     degrees.sort() # Sort degrees
+    print "Retrieved and sorted graph degrees."
 
     costs = [0] * len(graph.vertices)
     ranges = [None] * len(graph.vertices)
 
+    print "Starting DP implementation"
     # first 2k vertices lumped into one degree bin
     for i in xrange(2  * K_VALUE):
         costs[i] = anonymizationCost(degrees, 0, i)
@@ -67,18 +71,20 @@ def kAnonymize(graph): # The DP Algorithm
                 smallGroupCost = cost
                 tValue = t
         if smallGroupCost == -1 or largeGroupCost < smallGroupCost:
-            cost[i] = largeGroupCost
+            costs[i] = largeGroupCost
             ranges[i] = (0, i)
         else:
-            cost[i] = smallGroupCost
+            costs[i] = smallGroupCost
             ranges[i] = (tValue + 1, i)
 
 #         costs[i] = min(anonymizationCost(degrees, 0, i), \
 #                        min([ costs[t] + anonymizationCost(degrees, t + 1, i) \
 #                         for t in xrange(K_VALUE, i - K_VALUE)]))
+    print "Done with DP implementation"
 
 
     # Trace back to get degrees of each node
+    print "Tracing back to get degrees of each node"
     newDegrees = [-1] * len(graph.vertices)
     index = len(graph.vertices) - 1
     while(index >= 0):
@@ -87,6 +93,7 @@ def kAnonymize(graph): # The DP Algorithm
         for i in range(startIndex, endIndex + 1):
             newDegrees[i] = dStar
         index = startIndex - 1
+    print "Done assigning degrees."
 
     # Sanity check
     if any([i == -1 for i in newDegrees]):
@@ -95,6 +102,8 @@ def kAnonymize(graph): # The DP Algorithm
     return newDegrees
 
 def findBestSwap(inputGraph, anonymizedGraph):
+
+    print "findBestSwap"
 
     # For computational purposes we only examien some subset of the edges
     # in the graph.
@@ -142,6 +151,9 @@ def findBestSwap(inputGraph, anonymizedGraph):
 
 #outputs graph with same degree sequence as initialGraph and high similarity to inputGraph
 def greedySwap(initialGraph, inputGraph):
+
+    print "greedySwap"
+
     resultGraph = initialGraph
     c, toRemoveEdge, toAddEdge = findBestSwap(inputGraph, initialGraph)
 
@@ -155,6 +167,9 @@ def greedySwap(initialGraph, inputGraph):
     return resultGraph
 
 def constructGraph(degrees):
+
+    print "constructGraph"
+
     edges = []
     if(sum(degrees) % 2 == 1):
         raise RuntimeError
@@ -179,6 +194,8 @@ def constructGraph(degrees):
 
 def anonymize(graph):
 
+    print "anonymize"
+
     # get k-anonymous degrees for each node
     degreeSequence = kAnonymize(graph)
     try:
@@ -193,7 +210,7 @@ network = Network()
 
 
 # Open file
-file = open("com-youtube.ungraph.txt", "r")
+file = open("p2p-Gnutella08.txt", "r")
 
 # Go through header
 for _ in range(4):
@@ -203,12 +220,14 @@ for _ in range(4):
 line = file.readline()
 while(line != ""):
     tokens = line.split()
-    edge = (int(tokens[0]) - 1, int(tokens[1]) - 1)  # Store as ints
+    #edge = (int(tokens[0]) - 1, int(tokens[1]) - 1)  # Store as ints
+    edge = (int(tokens[0]), int(tokens[1]))  # Store as ints
     network.addEdge(edge)
     network.addNode(edge[0])
     network.addNode(edge[1])
     line = file.readline()
 file.close()
+print "Done reading file."
 
 # Code to anonymize data (I suggest switching to smaller dataset)
 anonymizedGraph = anonymize(network.toGraph())
