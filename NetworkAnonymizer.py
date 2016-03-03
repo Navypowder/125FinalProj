@@ -43,7 +43,7 @@ def kAnonymize(graph): # The DP Algorithm
     for edge in graph.edges:
         degrees[edge[0]] += 1
         degrees[edge[1]] += 1
-    sorted(degrees) # Sort degrees
+    degrees.sort() # Sort degrees
 
     costs = [0] * len(graph.vertices)
     ranges = [None] * len(graph.vertices)
@@ -58,7 +58,7 @@ def kAnonymize(graph): # The DP Algorithm
         largeGroupCost = anonymizationCost(degrees, 0, i)
         smallGroupCost = -1
         tValue = -1
-        for t in xrange(K_VALUE, i - K_VALUE):
+        for t in xrange(K_VALUE, i - K_VALUE + 1):
             cost =  costs[t] + anonymizationCost(degrees, t + 1, i)
             if smallGroupCost == -1 or smallGroupCost > cost:
                 smallGroupCost = cost
