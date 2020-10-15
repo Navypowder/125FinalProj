@@ -35,7 +35,7 @@ class Network:
 def makeEdge(n1, n2):  # 构造边，数小在前，数大在后
     return (min(n1, n2), max(n1, n2))
 
-def kAnonymize(graph): # The DP Algorithm  利用动态规划算法实现图匿名
+def kAnonymize(graph): # The DP Algorithm  利用动态规划算法实现图匿名并返回度序列
 
     print("kAnonymize")
 
@@ -114,7 +114,7 @@ def kAnonymize(graph): # The DP Algorithm  利用动态规划算法实现图匿�
         raise Exception("Error: Not all degrees were set to a value.")
     
    
-    return sorted(newDegrees)
+    return sorted(newDegrees)  # 正序排列匿名度序列
 
 def findBestSwap(inputGraph, anonymizedGraph):  # 输入分别为原始图与匿名图
 
