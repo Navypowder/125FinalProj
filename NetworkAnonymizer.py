@@ -114,7 +114,7 @@ def kAnonymize(graph): # The DP Algorithm  利用动态规划算法实现图匿�
         raise Exception("Error: Not all degrees were set to a value.")
     
    
-    return sorted(newDegrees)  # 正序排列匿名度序列
+    return sorted(newDegrees , reverse=True)  # 正序排列匿名度序列
 
 def findBestSwap(inputGraph, anonymizedGraph):  # 输入分别为原始图与匿名图
 
@@ -232,7 +232,7 @@ def anonymize(graph):
     print("anonymize")
 
     # get k-anonymous degrees for each node
-    degreeSequence = kAnonymize(graph)
+    degreeSequence = kAnonymize(graph)  # 得到新的匿名度序列(通过贪婪算法或动态规划)
     probeIndex = 0
     while True:
         try:
@@ -240,11 +240,11 @@ def anonymize(graph):
             kAnonymousGraph = constructGraph(degreeSequence)
             return greedySwap(kAnonymousGraph, graph)
         except TypeError:
-            print ("A: When you fail, get back up and try again.")
+            print("A: When you fail, get back up and try again.")
             degreeSequence[probeIndex] += 1
             probeIndex += 1
         except RuntimeError:
-            print ("B: When you fail, get back up and try again.")
+            print("B: When you fail, get back up and try again.")
             degreeSequence[probeIndex] += 2
             probeIndex += 1
 
@@ -253,7 +253,7 @@ network = Network()
 
 
 # Open file
-file = open("p2p-Gnutella08.txt", "r")
+file = open("karate2.txt", "r")
 
 # Go through header
 for _ in range(4):
